@@ -29,16 +29,7 @@ model** you can rotate in the browser and download as a standard `.glb` file.
 
 ## 🏗️ Architecture
 
-```mermaid
-flowchart LR
-    A["✏️ Sketch<br/>+ prompt"] --> B["① Clean-up<br/><i>OpenCV</i>"]
-    B --> C["② Understand<br/><i>Vision LLM</i>"]
-    C --> D["③ Reference image<br/><i>SDXL + ControlNet</i>"]
-    D --> E["④ Isolate object<br/><i>rembg U²-Net</i>"]
-    E --> F["⑤ Image → 3D<br/><i>TRELLIS / TripoSR</i>"]
-    F --> G["⑥ Validate mesh<br/><i>trimesh</i>"]
-    G --> H["🧊 model.glb"]
-```
+![Sketch2Shape AI pipeline](docs/images/architecture.png)
 
 The **frontend** (Next.js) sends the sketch to `POST /api/generate` and gets a `job_id` back immediately. The
 **backend** (FastAPI) runs the six steps as a background job. The page polls `GET /api/status/{job_id}` every
