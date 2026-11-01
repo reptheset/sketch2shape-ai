@@ -1,0 +1,63 @@
+{
+  "glb_path": "model.glb",
+  "valid": true,
+  "used_original": false,
+  "before": {
+    "meshes": 1,
+    "vertices": 10123,
+    "faces": 18114,
+    "textured_meshes": 1,
+    "vertex_colour_meshes": 0,
+    "materials": [
+      "PBRMaterial"
+    ],
+    "texture_sizes": [
+      [
+        1024,
+        1024
+      ]
+    ]
+  },
+  "after": {
+    "meshes": 1,
+    "vertices": 10123,
+    "faces": 18114,
+    "textured_meshes": 1,
+    "vertex_colour_meshes": 0,
+    "materials": [
+      "PBRMaterial"
+    ],
+    "texture_sizes": [
+      [
+        1024,
+        1024
+      ]
+    ]
+  },
+  "watertight": false,
+  "winding_consistent": true,
+  "extents": [
+    0.9295,
+    1.0,
+    0.6422
+  ],
+  "original_extents": [
+    0.9273,
+    0.9976,
+    0.6407
+  ],
+  "scale_factor": 1.002368,
+  "removed": {
+    "non_mesh_items": 0,
+    "degenerate_faces": 0,
+    "duplicate_faces": 0,
+    "unused_vertices": 0
+  },
+  "surface_area": 4.06823,
+  "volume": null,
+  "file_size_bytes": 1517720,
+  "warnings": [
+    "Mesh is not watertight (normal for single-view models; fine for viewing and most engines)."
+  ],
+  "seconds": 0.13
+}

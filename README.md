@@ -4,7 +4,7 @@
 
 ### Turn a single hand-drawn sketch into a textured 3D model (`.glb`)
 
-**Team 3Horcruxes** · TechZephyr 4.0 · IIT Bhubaneswar
+**Team Manashviruti** · TechZephyr 4.0 · IIT Bhubaneswar
 
 `Next.js 16` · `FastAPI` · `SDXL + ControlNet` · `TRELLIS` · `TripoSR` · `100% open-source models`
 
@@ -14,8 +14,8 @@
 
 ## 🎯 Objective
 
-Turning a sketch into a 3D model normally takes hours of manual modelling. **Sketch2Shape AI** does it in about
-**3 minutes**: draw an object (or upload a photo of a drawing), optionally describe it, and get a **textured 3D
+Turning a sketch into a 3D model normally takes hours of manual modelling. **Sketch2Shape AI** does it in a
+**few minutes**: draw an object (or upload a photo of a drawing), optionally describe it, and get a **textured 3D
 model** you can rotate in the browser and download as a standard `.glb` file.
 
 - 🖊️ **Draw or upload:** a full-screen Excalidraw-style whiteboard, or upload, drag-and-drop or paste a PNG/JPG
@@ -57,7 +57,7 @@ The **frontend** (Next.js) sends the sketch to `POST /api/generate` and gets a `
 | ② | **Qwen** vision model via **Groq** | Reads images, returns strict JSON, ~1 s, free tier. OpenAI also supported (`LLM_PROVIDER=openai`). | Open weights |
 | ③ | **SDXL 1.0** + **ControlNet Scribble SDXL** (xinsir) + **SDXL fp16-fix VAE** | Scribble ControlNet is made for rough hand-drawn lines; SDXL gives 1024² photo quality; the fixed VAE avoids black images on Apple GPUs | Open RAIL++-M · Apache-2.0 · MIT |
 | ④ | **rembg** with **U²-Net** | Reliable object masks in 1–2 s on CPU | MIT · Apache-2.0 |
-| ⑤ | **TRELLIS** (Microsoft) | Best free open image-to-3D model: textured PBR mesh in ~45 s | MIT |
+| ⑤ | **TRELLIS** (Microsoft) | Best free open image-to-3D model: textured PBR mesh in under a minute | MIT |
 | ⑤ | **TripoSR** (Stability AI + Tripo AI) | Small enough for a laptop and works offline when the free GPU quota runs out | MIT |
 | ⑥ | **trimesh** | Standard mesh library that keeps glTF materials intact | MIT |
 | Viewer | **three.js** + **React Three Fiber** | Native `.glb` support; studio lighting built in, so no downloads | MIT |
@@ -173,13 +173,67 @@ Open **[http://localhost:3000](http://localhost:3000)**, draw or upload a sketch
 
 ---
 
+## 🖼️ Sample results
+
+Two test runs from our final testing. The sketch, AI reference image, isolated object, final `.glb` and turntable
+video for each are in the [`samples/`](samples/) folder.
+
+**Sports car**: pencil sketch → reference image → isolated object → 3D model (back and top views)
+
+![Sports car: sketch to 3D](docs/images/result_sports-car.jpg)
+
+**Mug**: drawn on the app's whiteboard → reference image → isolated object → 3D model
+
+![Mug: sketch to 3D](docs/images/result_mug.jpg)
+
+| Sample | 3D model | Triangles | Material | File | Total time |
+|---|---|---|---|---|---|
+| Sports car | [`samples/sports-car/sports-car.glb`](samples/sports-car/sports-car.glb) | 10,492 | PBR texture 1024² | 1.6 MB | **2 min 45 s** |
+| Mug | [`samples/mug/mug.glb`](samples/mug/mug.glb) | 18,114 | PBR texture 1024² | 1.5 MB | **3 min 07 s** |
+
+---
+
 ## ⏱️ Generation time
 
-Measured on the MacBook described above over **12 complete runs** (full log in
-[`docs/BENCHMARKS.md`](docs/BENCHMARKS.md)):
+Measured on the MacBook described above, with `SD_STEPS=25` (the setting used for the demo).
 
-| Step | Time |
-|---|---|
+**Case 1: TRELLIS on the free Hugging Face GPU** (main path)
+
+| Step | Where it runs | Sports car | Mug |
+|---|---|---|---|
+| ① Clean-up | Laptop CPU | 0.02 s | 0.05 s |
+| ② Understand | Groq API | 1.7 s | 1.2 s |
+| ③ Reference image (SDXL, 25 steps) | Laptop GPU | 105 s | 132 s |
+| ④ Isolate object | Laptop CPU | 2.3 s | 1.1 s |
+| ⑤ Image → 3D (TRELLIS, incl. queue + download) | HF ZeroGPU | 56 s | 52 s |
+| ⑥ Validate mesh | Laptop CPU | 0.3 s | 0.1 s |
+| **Total, sketch → `.glb`** | | **2 min 45 s** | **3 min 07 s** |
+
+**Case 2: TripoSR fallback on the laptop** (used automatically when the free GPU quota runs out)
+
+| Step | Sports car | Mug |
+|---|---|---|
+| ③ Reference image (SDXL, 25 steps) | 105 s | 103 s |
+| ⑤ Image → 3D (includes a failed TRELLIS attempt of ~16 s; TripoSR itself took 9 s for the car) | 24 s | 30 s |
+| **Total, sketch → `.glb`** | **2 min 13 s** | **2 min 17 s** |
+
+- The reference image (③) on the laptop GPU is **60–75% of the total time**.
+- TRELLIS gives better models (textured, cleaner shapes). TripoSR is faster but simpler: vertex colours only and
+  much denser meshes (86k–118k triangles).
+- On an NVIDIA RTX 4090-class GPU, step ③ would typically take ~10 s, bringing the total to about 1–1.5 minutes.
+
+---|---|---|
+| ① Clean-up | Laptop CPU | *to be added* |
+| ② Understand | Groq API | *to be added* |
+| ③ Reference image (SDXL) | Laptop GPU | *to be added* |
+| ④ Isolate object | Laptop CPU | *to be added* |
+| ⑤ Image → 3D (TRELLIS / TripoSR) | HF ZeroGPU / Laptop | *to be added* |
+| ⑥ Validate mesh | Laptop CPU | *to be added* |
+| **Total, sketch → `.glb`** | | *to be added* |
+
+The slowest step is the reference image (③), which runs on the laptop's GPU.
+
+---|---|
 | ① Clean-up | < 0.1 s |
 | ② Understand (Groq) | ~1 s |
 | ③ Reference image, 30 steps *(default)* | 116–175 s |
@@ -263,7 +317,9 @@ sketch2shape-ai/
 ├── README.md
 ├── docs/
 │   ├── API.md                    HTTP API reference
-│   └── BENCHMARKS.md             every measured run
+│   ├── Sketch2Shape_Documentation.pdf   full project documentation
+│   └── images/                   architecture diagram and sample result images
+├── samples/                      two test results: sketch, AI images, model .glb, turntable
 ├── backend/                      FastAPI + AI pipeline
 │   ├── app/
 │   │   ├── main.py · routes.py   app setup and API endpoints
@@ -298,6 +354,6 @@ sketch2shape-ai/
 rembg / U²-Net · TRELLIS (Microsoft) · TripoSR (Stability AI & Tripo AI) · Qwen (Alibaba) via Groq ·
 trimesh · three.js · React Three Fiber · Next.js · FastAPI
 
-Made with ❤️ by **Team 3Horcruxes** for **TechZephyr 4.0**
+Made with ❤️ by **Team Manashviruti** for **TechZephyr 4.0**
 
 </div>
