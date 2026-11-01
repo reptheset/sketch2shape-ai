@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Secrets (API keys live here, never commit them)
+.env
+.env.local
+.env*.local
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Generated at runtime / downloaded by setup scripts
+backend/data/
+backend/vendor/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo

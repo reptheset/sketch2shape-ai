@@ -1,0 +1,36 @@
+# Web API
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+python-dotenv>=1.0
+
+# Image processing
+opencv-python-headless>=4.10
+numpy>=1.26
+
+# AI services
+openai>=1.99
+
+# Local image generation (Stage 4): SDXL + ControlNet Scribble
+torch>=2.2
+diffusers>=0.30
+transformers>=4.44
+accelerate>=0.33
+safetensors>=0.4
+huggingface_hub>=0.24
+Pillow>=10.0
+
+# Background removal (Stage 5): rembg + U²-Net (MIT)
+rembg>=2.0.50
+onnxruntime>=1.17
+
+# 3D reconstruction (Stage 6)
+# Primary: TRELLIS on a free Hugging Face Space, called with gradio_client
+gradio_client>=1.3
+# (trimesh is also used by Stage 7 mesh validation)
+# Fallback: TripoSR run locally (code cloned by scripts/setup_triposr.py)
+trimesh>=4.4
+scikit-image>=0.22
+omegaconf>=2.3
+einops>=0.7
+imageio>=2.31
